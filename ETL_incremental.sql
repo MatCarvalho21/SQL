@@ -74,39 +74,40 @@ SET search_path = pg_catalog, audit;
 /***
 FILIAL
 ***/
-CREATE TRIGGER audit_trg_filial
+-- Para salvar as modificações na tabela Filial
+CREATE TRIGGER filial_trg
 AFTER INSERT OR UPDATE OR DELETE ON cho_db.filial
 FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func();
 
--- Cria a tabela audit.ins_Filial como uma cópia vazia de cho_db.filial
-Create table audit.ins_Filial as select * from cho_db.filial where 1=0; 
+-- Cria a tabela audit.ins_filial como uma cópia vazia de cho_db.filial
+Create table audit.ins_filial as select * from cho_db.filial where 1=0; 
 
 /***
 Trigger para salvar inserções
 ***/
--- Função para capturar inserções na tabela Filial e salvá-las na tabela audit.ins_Filial
-CREATE OR REPLACE FUNCTION audit.ins_Filial_func() RETURNS trigger AS $body$
+-- Função para capturar inserções na tabela Filial e salvá-las na tabela audit.ins_filial
+CREATE OR REPLACE FUNCTION audit.ins_filial_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         v_new_data := ROW(NEW.*);
-        INSERT INTO audit.ins_Filial VALUES (NEW.filialid, NEW.filialrua, NEW.filialbairro, NEW.filialmunicipio, NEW.filialestado);
+        INSERT INTO audit.ins_filial VALUES (NEW.filialid, NEW.filialrua, NEW.filialbairro, NEW.filialmunicipio, NEW.filialestado);
         RETURN NEW;
     ELSE
-        RAISE WARNING '[audit.ins_Filial_func] - Other action occurred: %, at %', TG_OP, now();
+        RAISE WARNING '[audit.ins_filial_func] - Other action occurred: %, at %', TG_OP, now();
         RETURN NULL;
     END IF;
 EXCEPTION
     WHEN data_exception THEN
-        RAISE WARNING '[audit.ins_Filial_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_filial_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN unique_violation THEN
-        RAISE WARNING '[audit.ins_Filial_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_filial_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN others THEN
-        RAISE WARNING '[audit.ins_Filial_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_filial_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
 END;
 $body$
@@ -114,51 +115,52 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- Cria um trigger para capturar inserções na tabela Filial e chamar a função audit.ins_Filial_func
-DROP TRIGGER IF EXISTS Filial_insert_trg ON cho_db.filial;
-CREATE TRIGGER Filial_insert_trg
+-- Cria um trigger para capturar inserções na tabela Filial e chamar a função audit.ins_filial_func
+DROP TRIGGER IF EXISTS filiar_trg_insert ON cho_db.filial;
+CREATE TRIGGER filiar_trg_insert
 AFTER INSERT ON cho_db.filial
-FOR EACH ROW EXECUTE PROCEDURE audit.ins_Filial_func();
+FOR EACH ROW EXECUTE PROCEDURE audit.ins_filial_func();
 
 
 /***
 CLIENTE
 ***/
-CREATE TRIGGER audit_trg_cliente
+-- Para salvar as modificações na tabela Cliente
+CREATE TRIGGER cliente_trg
 AFTER INSERT OR UPDATE OR DELETE ON cho_db.cliente
 FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func();
 
--- Cria a tabela audit.ins_Cliente como uma cópia vazia de cho_db.cliente
-Create table audit.ins_Cliente as select * from cho_db.cliente where 1=0; 
+-- Cria a tabela audit.ins_cliente como uma cópia vazia de cho_db.cliente
+Create table audit.ins_cliente as select * from cho_db.cliente where 1=0; 
 
 /***
 Trigger para salvar inserções
 ***/
--- Função para capturar inserções na tabela Cliente e salvá-las na tabela audit.ins_Cliente
-CREATE OR REPLACE FUNCTION audit.ins_Cliente_func() RETURNS trigger AS $body$
+-- Função para capturar inserções na tabela Cliente e salvá-las na tabela audit.ins_cliente
+CREATE OR REPLACE FUNCTION audit.ins_cliente_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         v_new_data := ROW(NEW.*);
-        INSERT INTO audit.ins_Cliente VALUES (NEW.clienteid, NEW.clientenome, NEW.clientesobrenome, NEW.clientetiposang, 
+        INSERT INTO audit.ins_cliente VALUES (NEW.clienteid, NEW.clientenome, NEW.clientesobrenome, NEW.clientetiposang, 
                                               NEW.clienterua, NEW.clientebairro, NEW.clientemunicipio, NEW.clienteestado, 
                                               NEW.clientecpf, NEW.clientedatanasc);
         RETURN NEW;
     ELSE
-        RAISE WARNING '[audit.ins_Cliente_func] - Other action occurred: %, at %', TG_OP, now();
+        RAISE WARNING '[audit.ins_cliente_func] - Other action occurred: %, at %', TG_OP, now();
         RETURN NULL;
     END IF;
 EXCEPTION
     WHEN data_exception THEN
-        RAISE WARNING '[audit.ins_Cliente_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_cliente_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN unique_violation THEN
-        RAISE WARNING '[audit.ins_Cliente_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_cliente_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN others THEN
-        RAISE WARNING '[audit.ins_Cliente_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_cliente_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
 END;
 $body$
@@ -166,49 +168,50 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- Cria um trigger para capturar inserções na tabela Cliente e chamar a função audit.ins_Cliente_func
-DROP TRIGGER IF EXISTS Cliente_insert_trg ON cho_db.cliente;
-CREATE TRIGGER Cliente_insert_trg
+-- Cria um trigger para capturar inserções na tabela Cliente e chamar a função audit.ins_cliente_func
+DROP TRIGGER IF EXISTS cliente_trg_insert ON cho_db.cliente;
+CREATE TRIGGER cliente_trg_insert
 AFTER INSERT ON cho_db.cliente
-FOR EACH ROW EXECUTE PROCEDURE audit.ins_Cliente_func();
+FOR EACH ROW EXECUTE PROCEDURE audit.ins_cliente_func();
 
 
 /***
 PEDIDO
 ***/
-CREATE TRIGGER audit_trg_pedido
+-- Para salvar as modificações na tabela Pedido
+CREATE TRIGGER pedido_trg
 AFTER INSERT OR UPDATE OR DELETE ON cho_db.pedido
 FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func();
 
--- Cria a tabela audit.ins_Pedido como uma cópia vazia de cho_db.pedido
-Create table audit.ins_Pedido as select * from cho_db.pedido where 1=0; 
+-- Cria a tabela audit.ins_pedido como uma cópia vazia de cho_db.pedido
+Create table audit.ins_pedido as select * from cho_db.pedido where 1=0; 
 
 /***
 Trigger para salvar inserções
 ***/
--- Função para capturar inserções na tabela Pedido e salvá-las na tabela audit.ins_Pedido
-CREATE OR REPLACE FUNCTION audit.ins_Pedido_func() RETURNS trigger AS $body$
+-- Função para capturar inserções na tabela Pedido e salvá-las na tabela audit.ins_pedido
+CREATE OR REPLACE FUNCTION audit.ins_pedido_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         v_new_data := ROW(NEW.*);
-        INSERT INTO audit.ins_Pedido VALUES (NEW.pedidoid, NEW.pedidodata, NEW.clienteid, NEW.filialid);
+        INSERT INTO audit.ins_pedido VALUES (NEW.pedidoid, NEW.pedidodata, NEW.clienteid, NEW.filialid);
         RETURN NEW;
     ELSE
-        RAISE WARNING '[audit.ins_Pedido_func] - Other action occurred: %, at %', TG_OP, now();
+        RAISE WARNING '[audit.ins_pedido_func] - Other action occurred: %, at %', TG_OP, now();
         RETURN NULL;
     END IF;
 EXCEPTION
     WHEN data_exception THEN
-        RAISE WARNING '[audit.ins_Pedido_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedido_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN unique_violation THEN
-        RAISE WARNING '[audit.ins_Pedido_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedido_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN others THEN
-        RAISE WARNING '[audit.ins_Pedido_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedido_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
 END;
 $body$
@@ -216,50 +219,50 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- Cria um trigger para capturar inserções na tabela Pedido e chamar a função audit.ins_Pedido_func
-DROP TRIGGER IF EXISTS Pedido_insert_trg ON cho_db.pedido;
-CREATE TRIGGER Pedido_insert_trg
+-- Cria um trigger para capturar inserções na tabela Pedido e chamar a função audit.ins_pedido_func
+DROP TRIGGER IF EXISTS pedido_trg_insert ON cho_db.pedido;
+CREATE TRIGGER pedido_trg_insert
 AFTER INSERT ON cho_db.pedido
-FOR EACH ROW EXECUTE PROCEDURE audit.ins_Pedido_func();
+FOR EACH ROW EXECUTE PROCEDURE audit.ins_pedido_func();
 
 
 /***
 PEDIDO ITEM
 ***/
 -- Para salvar as modificações na tabela PedidoItem
-CREATE TRIGGER audit_trg_pedidoitem
+CREATE TRIGGER pedidoitem_trg
 AFTER INSERT OR UPDATE OR DELETE ON cho_db.pedidoitem
 FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func();
+
+-- Cria a tabela audit.ins_pedidoitem como uma cópia vazia de cho_db.pedidoitem
+Create table audit.ins_pedidoitem as select * from cho_db.pedidoitem where 1=0; 
 
 /***
 Trigger para salvar inserções
 ***/
--- Cria a tabela audit.ins_PedidoItem como uma cópia vazia de cho_db.pedidoitem
-Create table audit.ins_PedidoItem as select * from cho_db.pedidoitem where 1=0; 
-
--- Função para capturar inserções na tabela PedidoItem e salvá-las na tabela audit.ins_PedidoItem
-CREATE OR REPLACE FUNCTION audit.ins_PedidoItem_func() RETURNS trigger AS $body$
+-- Função para capturar inserções na tabela PedidoItem e salvá-las na tabela audit.ins_pedidoitem
+CREATE OR REPLACE FUNCTION audit.ins_pedidoitem_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         v_new_data := ROW(NEW.*);
-        INSERT INTO audit.ins_PedidoItem VALUES (NEW.quantidade, NEW.pedidoid, NEW.itemid);
+        INSERT INTO audit.ins_pedidoitem VALUES (NEW.quantidade, NEW.pedidoid, NEW.itemid);
         RETURN NEW;
     ELSE
-        RAISE WARNING '[audit.ins_PedidoItem_func] - Other action occurred: %, at %', TG_OP, now();
+        RAISE WARNING '[audit.ins_pedidoitem_func] - Other action occurred: %, at %', TG_OP, now();
         RETURN NULL;
     END IF;
 EXCEPTION
     WHEN data_exception THEN
-        RAISE WARNING '[audit.ins_PedidoItem_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedidoitem_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN unique_violation THEN
-        RAISE WARNING '[audit.ins_PedidoItem_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedidoitem_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN others THEN
-        RAISE WARNING '[audit.ins_PedidoItem_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_pedidoitem_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
 END;
 $body$
@@ -267,51 +270,50 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- Cria um trigger para capturar inserções na tabela PedidoItem e chamar a função audit.ins_PedidoItem_func
-DROP TRIGGER IF EXISTS PedidoItem_insert_trg ON cho_db.pedidoitem;
-CREATE TRIGGER PedidoItem_insert_trg
+-- Cria um trigger para capturar inserções na tabela PedidoItem e chamar a função audit.ins_pedidoitem_func
+DROP TRIGGER IF EXISTS pedidoitem_trg_insert ON cho_db.pedidoitem;
+CREATE TRIGGER pedidoitem_trg_insert
 AFTER INSERT ON cho_db.pedidoitem
-FOR EACH ROW EXECUTE PROCEDURE audit.ins_PedidoItem_func();
-
+FOR EACH ROW EXECUTE PROCEDURE audit.ins_pedidoitem_func();
 
 
 /***
 ITEM
 ***/
 -- Para salvar as modificações na tabela Item
-CREATE TRIGGER audit_trg_item
+CREATE TRIGGER item_trg
 AFTER INSERT OR UPDATE OR DELETE ON cho_db.item
 FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func();
 
 /***
 Trigger para salvar inserções
 ***/
--- Cria a tabela audit.ins_Item como uma cópia vazia de cho_db.item
-Create table audit.ins_Item as select * from cho_db.item where 1=0; 
+-- Cria a tabela audit.ins_item como uma cópia vazia de cho_db.item
+Create table audit.ins_item as select * from cho_db.item where 1=0; 
 
--- Função para capturar inserções na tabela Item e salvá-las na tabela audit.ins_Item
-CREATE OR REPLACE FUNCTION audit.ins_Item_func() RETURNS trigger AS $body$
+-- Função para capturar inserções na tabela Item e salvá-las na tabela audit.ins_item
+CREATE OR REPLACE FUNCTION audit.ins_item_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
     IF (TG_OP = 'INSERT') THEN
         v_new_data := ROW(NEW.*);
-        INSERT INTO audit.ins_Item VALUES (NEW.itemid, NEW.itemnome, NEW.itemcategoria, NEW.itemprecovenda);
+        INSERT INTO audit.ins_item VALUES (NEW.itemid, NEW.itemnome, NEW.itemcategoria, NEW.itemprecovenda);
         RETURN NEW;
     ELSE
-        RAISE WARNING '[audit.ins_Item_func] - Other action occurred: %, at %', TG_OP, now();
+        RAISE WARNING '[audit.ins_item_func] - Other action occurred: %, at %', TG_OP, now();
         RETURN NULL;
     END IF;
 EXCEPTION
     WHEN data_exception THEN
-        RAISE WARNING '[audit.ins_Item_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_item_func] - UDF ERROR [DATA EXCEPTION] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN unique_violation THEN
-        RAISE WARNING '[audit.ins_Item_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_item_func] - UDF ERROR [UNIQUE] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
     WHEN others THEN
-        RAISE WARNING '[audit.ins_Item_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
+        RAISE WARNING '[audit.ins_item_func] - UDF ERROR [OTHER] - SQLSTATE: %, SQLERRM: %', SQLSTATE, SQLERRM;
         RETURN NULL;
 END;
 $body$
@@ -319,12 +321,11 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- Cria um trigger para capturar inserções na tabela Item e chamar a função audit.ins_Item_func
-DROP TRIGGER IF EXISTS Item_insert_trg ON cho_db.item;
-CREATE TRIGGER Item_insert_trg
+-- Cria um trigger para capturar inserções na tabela Item e chamar a função audit.ins_item_func
+DROP TRIGGER IF EXISTS item_trg_insert ON cho_db.item;
+CREATE TRIGGER item_trg_insert
 AFTER INSERT ON cho_db.item
-FOR EACH ROW EXECUTE PROCEDURE audit.ins_Item_func();
-
+FOR EACH ROW EXECUTE PROCEDURE audit.ins_item_func();
 
 
 -- 
@@ -332,13 +333,13 @@ FOR EACH ROW EXECUTE PROCEDURE audit.ins_Item_func();
 --
 
 /*****
-Atualiza a dimensão do calendário na tabela cho.CalendarioDimension com base nos dados da tabela audit.ins_Pedido. 
-A função audit.ins_dim_Calendario_func captura inserções na tabela audit.ins_Pedido e, para cada nova inserção,
+Atualiza a dimensão do calendário na tabela cho.CalendarioDimension com base nos dados da tabela audit.ins_pedido. 
+A função audit.ins_dim_calendario_func captura inserções na tabela audit.ins_pedido e, para cada nova inserção,
 insere uma nova linha na tabela cho.CalendarioDimension se a data correspondente não estiver presente. 
 Os campos são gerados a partir da data do pedido, incluindo chave do calendário, data completa, dia da semana, dia, mês, trimestre e ano.
-Depois de inserir os dados, a tabela audit.ins_Filial é truncada para preparação de novas inserções.
+Depois de inserir os dados, a tabela audit.ins_filial é truncada para preparação de novas inserções.
 ******/
-CREATE OR REPLACE FUNCTION audit.ins_dim_Calendario_func() RETURNS trigger AS $body$
+CREATE OR REPLACE FUNCTION audit.ins_dim_calendario_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
@@ -371,7 +372,7 @@ FROM (
     cast(to_char(p.PedidoData, 'Q') as int) as trimestre,
     extract(year from p.PedidoData) as ano
   FROM 
-    audit.ins_Pedido p 
+    audit.ins_pedido p 
   WHERE p.PedidoData NOT IN (SELECT DataCompleta FROM cho.CalendarioDimension)
 ) as a;
 RETURN NEW;
@@ -397,24 +398,24 @@ SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
 -- Trigger para que uma nova data for adicionado, atualizamos a dimensão de calendário, se for uma data nova
-CREATE TRIGGER dim_Calendario_insert_trg
-AFTER INSERT ON audit.ins_Pedido
-EXECUTE PROCEDURE audit.ins_dim_Calendario_func();
+CREATE TRIGGER dim_calendario_insert_trg
+AFTER INSERT ON audit.ins_pedido
+EXECUTE PROCEDURE audit.ins_dim_calendario_func();
 
 
 /*****
-Atualiza a dimensão de filial na tabela cho.FilialDimension com base nas inserções na tabela audit.ins_Filial.
-A função audit.ins_dim_Filial_func captura inserções na tabela audit.ins_Filial e insere os dados correspondentes na tabela cho.FilialDimension.
-Depois de inserir os dados, a tabela audit.ins_Filial é truncada para preparação de novas inserções.
+Atualiza a dimensão de filial na tabela cho.FilialDimension com base nas inserções na tabela audit.ins_filial.
+A função audit.ins_dim_filial_func captura inserções na tabela audit.ins_filial e insere os dados correspondentes na tabela cho.FilialDimension.
+Depois de inserir os dados, a tabela audit.ins_filial é truncada para preparação de novas inserções.
 ******/
-CREATE OR REPLACE FUNCTION audit.ins_dim_Filial_func() RETURNS trigger AS $body$
+CREATE OR REPLACE FUNCTION audit.ins_dim_filial_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
 BEGIN
 if (TG_OP = 'INSERT') then
 v_new_data := ROW(NEW.*);
-INSERT INTO cho.FilialDimension (FilialKEY, FilialID, FilialRua, FilialBairro, FilialMunicipio, FilialEstado) SELECT gen_random_uuid(), filialid, filialrua, filialbairro, filialmunicipio, filialestado FROM audit.ins_Filial;
+INSERT INTO cho.FilialDimension (FilialKEY, FilialID, FilialRua, FilialBairro, FilialMunicipio, FilialEstado) SELECT gen_random_uuid(), filialid, filialrua, filialbairro, filialmunicipio, filialestado FROM audit.ins_filial;
 
 RETURN NEW;
 else
@@ -439,15 +440,15 @@ SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
 -- Trigger para que uma nova filial for adicionado, atualizamos a dimensão filial
-CREATE TRIGGER dim_Filial_insert_trg
-AFTER INSERT ON audit.ins_Filial
-EXECUTE PROCEDURE audit.ins_dim_Filial_func();
+CREATE TRIGGER dim_filial_insert_trg
+AFTER INSERT ON audit.ins_filial
+EXECUTE PROCEDURE audit.ins_dim_filial_func();
 
 
 /*****
-Atualiza a dimensão de itens na tabela cho.TipoPratoDimension com base nas inserções na tabela audit.ins_Item.
-A função audit.ins_dim_Item_func captura inserções na tabela audit.ins_Item e insere os dados correspondentes na tabela cho.TipoPratoDimension.
-Depois de inserir os dados, a tabela audit.ins_Item é truncada para preparação de novas inserções.
+Atualiza a dimensão de itens na tabela cho.TipoPratoDimension com base nas inserções na tabela audit.ins_item.
+A função audit.ins_dim_Item_func captura inserções na tabela audit.ins_item e insere os dados correspondentes na tabela cho.TipoPratoDimension.
+Depois de inserir os dados, a tabela audit.ins_item é truncada para preparação de novas inserções.
 ******/
 CREATE OR REPLACE FUNCTION audit.ins_dim_Item_func() RETURNS trigger AS $body$
 DECLARE
@@ -458,7 +459,7 @@ if (TG_OP = 'INSERT') then
 v_new_data := ROW(NEW.*);
 INSERT INTO cho.TipoPratoDimension (TipoPratoKEY, ItemID, ItemCategoria)
 SELECT gen_random_uuid(), itemid, itemcategoria
-FROM audit.ins_Item;
+FROM audit.ins_item;
 
 RETURN NEW;
 else
@@ -483,17 +484,17 @@ SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
 -- Trigger para que um novo produto for adicionado, atualizamos a dimensão produto 
-CREATE TRIGGER dim_Item_insert_trg
-AFTER INSERT ON audit.ins_Item
+CREATE TRIGGER dim_item_insert_trg
+AFTER INSERT ON audit.ins_item
 EXECUTE PROCEDURE audit.ins_dim_Item_func();
 
 
 /*****
-Atualiza as dimensões relacionadas ao cliente nas tabelas cho.ClienteDimension, cho.EndereçoClienteDimension e cho.TipoSangClienteDimension com base nas inserções na tabela audit.ins_Cliente.
-A função audit.ins_dim_Cliente_func captura inserções na tabela audit.ins_Cliente e insere os dados correspondentes nas tabelas de dimensão de cliente, endereço e tipo sanguíneo.
-Depois de inserir os dados, a tabela audit.ins_Cliente é truncada para preparação de novas inserções.
+Atualiza as dimensões relacionadas ao cliente nas tabelas cho.ClienteDimension, cho.EndereçoClienteDimension e cho.TipoSangClienteDimension com base nas inserções na tabela audit.ins_cliente.
+A função audit.ins_dim_cliente_func captura inserções na tabela audit.ins_cliente e insere os dados correspondentes nas tabelas de dimensão de cliente, endereço e tipo sanguíneo.
+Depois de inserir os dados, a tabela audit.ins_cliente é truncada para preparação de novas inserções.
 ******/
-CREATE OR REPLACE FUNCTION audit.ins_dim_Cliente_func() RETURNS trigger AS $body$
+CREATE OR REPLACE FUNCTION audit.ins_dim_cliente_func() RETURNS trigger AS $body$
 DECLARE
     v_old_data TEXT;
     v_new_data TEXT;
@@ -513,7 +514,7 @@ SELECT
   CONCAT(clientenome, ' ', clientesobrenome),
   clientecpf
 FROM
-  audit.ins_Cliente;
+  audit.ins_cliente;
 
 INSERT INTO cho.EndereçoClienteDimension (
   EnderecoKEY,
@@ -529,7 +530,7 @@ SELECT
   clientemunicipio,
   clienteestado
 FROM
-  audit.ins_Cliente;
+  audit.ins_cliente;
 
 INSERT INTO cho.TipoSangClienteDimension (
     TipoSangKEY,
@@ -539,7 +540,7 @@ SELECT
     gen_random_uuid(),
     clientetiposang
 FROM
-    audit.ins_Cliente;
+    audit.ins_cliente;
 
 RETURN NEW;
 else
@@ -563,18 +564,15 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- quando um novo cliente for adicionado atualiza a dimensão cliente 
-CREATE TRIGGER dim_Cliente_insert_trg
-AFTER INSERT ON audit.ins_Cliente
-EXECUTE PROCEDURE audit.ins_dim_Cliente_func();
-
+-- Trigger para que um novo cliente for adicionado, atualizamos a dimensão cliente, tipo sanguineo do cliente e endereço cliente
+CREATE TRIGGER dim_cliente_trg_insert
+AFTER INSERT ON audit.ins_cliente
+EXECUTE PROCEDURE audit.ins_dim_cliente_func();
 
 /*****
+Atualiza as tabela de fatos detalhada com base nas inserções realizadas.
 
-Atualizar fatos Receita Detalhada
-
-repetindo a mesma instrução da carga inicial para audit.ins_Compra
-
+As tabelas pedido e pedido item devem ser atualizadas.
 ******/
 CREATE OR REPLACE FUNCTION audit.ins_Receita_Detalhada_func() RETURNS trigger AS $body$
 DECLARE
@@ -660,17 +658,15 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- quando uma nova compra ocorrer atualiza fatos de Venda detalhados
+-- Trigger para que quando novos pedidos forem adicionados, atualizarmos a tabela de fatos detalhados.
 CREATE TRIGGER receita_detalha_insert_trg
-AFTER INSERT ON audit.ins_Pedido
+AFTER INSERT ON audit.ins_pedido
 EXECUTE PROCEDURE audit.ins_Receita_Detalhada_func();
 
 /*****
+Atualiza as tabela de fatos com base nas inserções realizadas.
 
-Atualizar fatos Receita
-
-repetindo a mesma instrução da carga inicial para audit.ins_Compra
-
+As tabelas pedido e pedido item devem ser atualizadas.
 ******/
 CREATE OR REPLACE FUNCTION audit.ins_Receita_func() RETURNS trigger AS $body$
 DECLARE
@@ -746,12 +742,13 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, audit;
 
--- quando uma nova compra ocorrer atualiza fatos Agregados de Venda
+-- Trigger para que quando novos pedidos forem adicionados, atualizarmos a tabela de fatos detalhados.
 CREATE TRIGGER Receita_insert_trg
-AFTER INSERT ON audit.ins_Pedido
+AFTER INSERT ON audit.ins_pedido
 EXECUTE PROCEDURE audit.ins_Receita_func();
 
-TRUNCATE TABLE audit.ins_Filial;
-TRUNCATE TABLE audit.ins_Cliente;
-TRUNCATE TABLE audit.ins_Pedido;
-TRUNCATE TABLE audit.ins_Item;
+-- Aqui, apagamos os dados das tabelas que guardam as alterações. Isso é necessário para que não haja repetição na atualização dos dados.
+TRUNCATE TABLE audit.ins_filial;
+TRUNCATE TABLE audit.ins_cliente;
+TRUNCATE TABLE audit.ins_pedido;
+TRUNCATE TABLE audit.ins_item;
