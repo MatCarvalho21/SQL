@@ -161,19 +161,81 @@ GROUP BY
     p.PedidoID, cd.ClienteKEY, fd.FilialKEY, cad.CalendarioKEY, tdp.TipoPratoKEY, 
     tsd.TipoSangKEY, ed.EnderecoKEY, i.ItemPrecoVenda, pi.Quantidade, p.PedidoData, i.ItemID;
 
-INSERT INTO cho.FaturamentoEsperado
+
+
+-----------------------------------------------------------------------
+
+-- CARTÃO DE CRÉDITO
 SELECT
-    gen_random_uuid(),
-    fd.FilialKEY,
     tcd.TransacaoData,
-
-FROM 
-    TransacaoCartaoDeCredito tcd
+    fd.FilialKEY,
+    SUM(tcd.TransacaoValor) AS TotalCartão
+FROM
+    cc_bd.TransacaoCartaoDeCredito tcd
 JOIN
-    cho.FilialDimension fd ON tcd.TransacaoEstado = fd.FilialEstado 
-    AND tcd.TransacaoMunicipio = fd.FilialMunicipio 
+    cho.FilialDimension fd ON tcd.TransacaoCidade = fd.FilialMunicipio
     AND tcd.TransacaoBairro = fd.FilialBairro
-JOIN
-
+WHERE
+    tcd.TransacaoSegmento = 'Alimentação'
 GROUP BY
     fd.FilialKEY, tcd.TransacaoData;
+
+-- NOSSA BASE
+SELECT
+    CAST(p.PedidoData AS DATE),
+    fd.FilialKEY,
+    SUM(pi.Quantidade * i.ItemPrecoVenda) AS TotalGasto
+FROM
+    cho.FilialDimension fd
+JOIN
+    Pedido p ON p.FilialID = fd.FilialID
+JOIN
+    PedidoItem pi ON p.PedidoID = pi.PedidoID
+JOIN
+    Item i ON pi.ItemID = i.ItemID
+GROUP BY
+    CAST(p.PedidoData AS DATE), fd.FilialKEY;
+
+
+-----------------------------------------------------------------------
+
+SELECT
+    COALESCE(cartao.FilialKEY, nossa_base.FilialKEY) AS FilialKEY,
+    gen_random_uuid() AS FaturamentoID,
+    COALESCE(cartao.TransacaoData, nossa_base.PedidoData) AS Data,
+    nossa_base.TotalGasto AS Faturamento_Real,
+    cartao.TotalCartão
+FROM
+    (-- CARTÃO DE CRÉDITO
+    SELECT
+        tcd.TransacaoData,
+        fd.FilialKEY,
+        SUM(tcd.TransacaoValor) AS TotalCartão
+    FROM
+        cc_bd.TransacaoCartaoDeCredito tcd
+    JOIN
+        cho.FilialDimension fd ON tcd.TransacaoCidade = fd.FilialMunicipio
+            AND tcd.TransacaoBairro = fd.FilialBairro
+    WHERE
+        tcd.TransacaoSegmento = 'Alimentação'
+    GROUP BY
+        fd.FilialKEY, tcd.TransacaoData) AS cartao
+JOIN
+    (-- NOSSA BASE
+    SELECT
+        CAST(p.PedidoData AS DATE) AS PedidoData,
+        fd.FilialKEY,
+        SUM(pi.Quantidade * i.ItemPrecoVenda) AS TotalGasto
+    FROM
+        cho.FilialDimension fd
+    JOIN
+        Pedido p ON p.FilialID = fd.FilialID
+    JOIN
+        PedidoItem pi ON p.PedidoID = pi.PedidoID
+    JOIN
+        Item i ON pi.ItemID = i.ItemID
+    GROUP BY
+        CAST(p.PedidoData AS DATE), fd.FilialKEY) AS nossa_base
+ON
+    cartao.FilialKEY = nossa_base.FilialKEY
+    AND cartao.TransacaoData = nossa_base.PedidoData;
