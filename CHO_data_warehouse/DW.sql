@@ -101,3 +101,15 @@ CREATE TABLE ReceitaDetalhada
   FOREIGN KEY (TipoPratoKEY) REFERENCES TipoPratoDimension(TipoPratoKEY),
   FOREIGN KEY (TipoSangKEY) REFERENCES TipoSangClienteDimension(TipoSangKEY)
 );
+
+CREATE TABLE FaturamentoEsperado
+(
+  Data DATETIME NOT NULL,
+  FaturamentoID VARCHAR NOT NULL,
+  FaturamentoEsperado DECIMAL(10,2) NOT NULL,
+  FaturamentoReal DECIMAL(10,2) NOT NULL,
+  Diferenca DECIMAL(10,2) NOT NULL,
+  FilialKEY VARCHAR NOT NULL,
+  PRIMARY KEY (FaturamentoID),
+  FOREIGN KEY (FilialKEY) REFERENCES Filial_Dimension(FilialKEY)
+);
