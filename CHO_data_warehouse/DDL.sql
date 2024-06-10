@@ -139,10 +139,15 @@ CREATE TABLE Funcionario_FuncTelefone
   FOREIGN KEY (FuncID) REFERENCES Funcionario(FuncID)
 );
 
+Drop schema if exists cc_bd cascade;
+create schema cc_bd;
+
+set search_path=cc_bd;
+
 CREATE TABLE TransacaoCartaoDeCredito
 (
   TransacaoID INT NOT NULL,
-  TransacaoData DATETIME NOT NULL,
+  TransacaoData TIME NOT NULL,
   TransacaoValor DECIMAL(10, 2) NOT NULL,
   TransacaoSegmento VARCHAR(100) NOT NULL,
   TransacaoEstado CHAR(2) NOT NULL,

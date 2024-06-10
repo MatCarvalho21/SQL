@@ -1004,3 +1004,7 @@ INSERT INTO ItemIngrediente (IngredID, ItemID) VALUES
 (14, 16),
 (15, 17),
 (16, 18);
+
+-- sobe o arquivo para o Moba e executa esse comando
+set search_path=cc_bd;
+\i /home/dbadmin/DML_cartao.sql
