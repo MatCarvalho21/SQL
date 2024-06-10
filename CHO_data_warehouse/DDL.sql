@@ -147,7 +147,7 @@ set search_path=cc_bd;
 CREATE TABLE TransacaoCartaoDeCredito
 (
   TransacaoID INT NOT NULL,
-  TransacaoData TIME NOT NULL,
+  TransacaoData DATE NOT NULL,
   TransacaoValor DECIMAL(10, 2) NOT NULL,
   TransacaoSegmento VARCHAR(100) NOT NULL,
   TransacaoEstado CHAR(2) NOT NULL,
