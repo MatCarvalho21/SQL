@@ -160,3 +160,20 @@ JOIN
 GROUP BY 
     p.PedidoID, cd.ClienteKEY, fd.FilialKEY, cad.CalendarioKEY, tdp.TipoPratoKEY, 
     tsd.TipoSangKEY, ed.EnderecoKEY, i.ItemPrecoVenda, pi.Quantidade, p.PedidoData, i.ItemID;
+
+INSERT INTO cho.FaturamentoEsperado
+SELECT
+    gen_random_uuid(),
+    fd.FilialKEY,
+    tcd.TransacaoData,
+
+FROM 
+    TransacaoCartaoDeCredito tcd
+JOIN
+    cho.FilialDimension fd ON tcd.TransacaoEstado = fd.FilialEstado 
+    AND tcd.TransacaoMunicipio = fd.FilialMunicipio 
+    AND tcd.TransacaoBairro = fd.FilialBairro
+JOIN
+
+GROUP BY
+    fd.FilialKEY, tcd.TransacaoData;
