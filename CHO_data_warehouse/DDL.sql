@@ -155,3 +155,10 @@ CREATE TABLE TransacaoCartaoDeCredito
   TransacaoBairro VARCHAR(100) NOT NULL,
   PRIMARY KEY (TransacaoID)
 );
+
+CREATE TABLE MarketShareFilial
+(
+  FilialID INT NOT NULL,
+  MarketShare DECIMAL(10, 2) NOT NULL,
+  PRIMARY KEY (FilialID)
+);

@@ -161,65 +161,31 @@ GROUP BY
     p.PedidoID, cd.ClienteKEY, fd.FilialKEY, cad.CalendarioKEY, tdp.TipoPratoKEY, 
     tsd.TipoSangKEY, ed.EnderecoKEY, i.ItemPrecoVenda, pi.Quantidade, p.PedidoData, i.ItemID;
 
-
-
------------------------------------------------------------------------
-
--- CARTÃO DE CRÉDITO
+INSERT INTO cho.FaturamentoEsperado
 SELECT
-    tcd.TransacaoData,
-    fd.FilialKEY,
-    SUM(tcd.TransacaoValor) AS TotalCartão
-FROM
-    cc_bd.TransacaoCartaoDeCredito tcd
-JOIN
-    cho.FilialDimension fd ON tcd.TransacaoCidade = fd.FilialMunicipio
-    AND tcd.TransacaoBairro = fd.FilialBairro
-WHERE
-    tcd.TransacaoSegmento = 'Alimentação'
-GROUP BY
-    fd.FilialKEY, tcd.TransacaoData;
-
--- NOSSA BASE
-SELECT
-    CAST(p.PedidoData AS DATE),
-    fd.FilialKEY,
-    SUM(pi.Quantidade * i.ItemPrecoVenda) AS TotalGasto
-FROM
-    cho.FilialDimension fd
-JOIN
-    Pedido p ON p.FilialID = fd.FilialID
-JOIN
-    PedidoItem pi ON p.PedidoID = pi.PedidoID
-JOIN
-    Item i ON pi.ItemID = i.ItemID
-GROUP BY
-    CAST(p.PedidoData AS DATE), fd.FilialKEY;
-
-
------------------------------------------------------------------------
-
-SELECT
-    COALESCE(cartao.FilialKEY, nossa_base.FilialKEY) AS FilialKEY,
-    gen_random_uuid() AS FaturamentoID,
-    COALESCE(cartao.TransacaoData, nossa_base.PedidoData) AS Data,
-    nossa_base.TotalGasto AS Faturamento_Real,
-    cartao.TotalCartão
+    COALESCE(cartao.TransacaoData, nossa_base.PedidoData),
+    gen_random_uuid(),
+    cartao.ValorEsperado,
+    nossa_base.TotalGasto,
+    ROUND((nossa_base.TotalGasto::numeric/ cartao.ValorEsperado::numeric)::numeric, 2),
+    COALESCE(cartao.FilialKEY, nossa_base.FilialKEY) AS FilialKEY
 FROM
     (-- CARTÃO DE CRÉDITO
     SELECT
         tcd.TransacaoData,
         fd.FilialKEY,
-        SUM(tcd.TransacaoValor) AS TotalCartão
+        ROUND(SUM(tcd.TransacaoValor) * msf.MarketShare, 2) AS ValorEsperado
     FROM
         cc_bd.TransacaoCartaoDeCredito tcd
     JOIN
         cho.FilialDimension fd ON tcd.TransacaoCidade = fd.FilialMunicipio
             AND tcd.TransacaoBairro = fd.FilialBairro
+    JOIN
+        cc_bd.MarketShareFilial msf ON fd.FilialID = msf.FilialID
     WHERE
         tcd.TransacaoSegmento = 'Alimentação'
     GROUP BY
-        fd.FilialKEY, tcd.TransacaoData) AS cartao
+        fd.FilialKEY, tcd.TransacaoData, msf.MarketShare) AS cartao
 JOIN
     (-- NOSSA BASE
     SELECT
@@ -237,5 +203,6 @@ JOIN
     GROUP BY
         CAST(p.PedidoData AS DATE), fd.FilialKEY) AS nossa_base
 ON
-    cartao.FilialKEY = nossa_base.FilialKEY
-    AND cartao.TransacaoData = nossa_base.PedidoData;
+    cartao.TransacaoData = nossa_base.PedidoData
+    AND cartao.FilialKEY = nossa_base.FilialKEY;
+

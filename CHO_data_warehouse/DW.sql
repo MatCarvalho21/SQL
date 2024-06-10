@@ -104,12 +104,12 @@ CREATE TABLE ReceitaDetalhada
 
 CREATE TABLE FaturamentoEsperado
 (
-  Data DATETIME NOT NULL,
+  Data DATE NOT NULL,
   FaturamentoID VARCHAR NOT NULL,
   FaturamentoEsperado DECIMAL(10,2) NOT NULL,
   FaturamentoReal DECIMAL(10,2) NOT NULL,
-  Diferenca DECIMAL(10,2) NOT NULL,
+  Porcentagem DECIMAL(10,2) NOT NULL,
   FilialKEY VARCHAR NOT NULL,
   PRIMARY KEY (FaturamentoID),
-  FOREIGN KEY (FilialKEY) REFERENCES Filial_Dimension(FilialKEY)
+  FOREIGN KEY (FilialKEY) REFERENCES FilialDimension(FilialKEY)
 );
