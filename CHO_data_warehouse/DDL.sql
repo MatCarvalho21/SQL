@@ -159,6 +159,6 @@ CREATE TABLE TransacaoCartaoDeCredito
 CREATE TABLE MarketShareFilial
 (
   FilialID INT NOT NULL,
-  MarketShare DECIMAL(10, 2) NOT NULL,
+  MarketShare DECIMAL(10, 3) NOT NULL,
   PRIMARY KEY (FilialID)
 );

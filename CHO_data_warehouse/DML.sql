@@ -1005,18 +1005,21 @@ INSERT INTO ItemIngrediente (IngredID, ItemID) VALUES
 (15, 17),
 (16, 18);
 
+\i /home/dbadmin/DML_pedido_novo.sql
+\i /home/dbadmin/DML_pedido_item_novo.sql
+
 -- sobe o arquivo para o Moba e executa esse comando
 set search_path=cc_bd;
 \i /home/dbadmin/DML_cartao.sql
 
 INSERT INTO MarketShareFilial (FilialID, MarketShare) VALUES
-(1, 0.02),
-(2, 0.04),
-(3, 0.1),
-(4, 0.03),
-(5, 0.03),
-(6, 0.02),
-(7, 0.02),
-(8, 0.03),
-(9, 0.01),
-(10, 0.07);
+(1, 0.01),
+(2, 0.02),
+(3, 0.05),
+(4, 0.015),
+(5, 0.015),
+(6, 0.01),
+(7, 0.01),
+(8, 0.015),
+(9, 0.005),
+(10, 0.035);
