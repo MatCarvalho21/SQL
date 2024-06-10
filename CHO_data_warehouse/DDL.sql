@@ -138,3 +138,15 @@ CREATE TABLE Funcionario_FuncTelefone
   PRIMARY KEY (FuncTelefone, FuncID),
   FOREIGN KEY (FuncID) REFERENCES Funcionario(FuncID)
 );
+
+CREATE TABLE TransacaoCartaoDeCredito
+(
+  TransacaoID INT NOT NULL,
+  TransacaoData DATETIME NOT NULL,
+  TransacaoValor DECIMAL(10, 2) NOT NULL,
+  TransacaoSegmento VARCHAR(100) NOT NULL,
+  TransacaoEstado CHAR(2) NOT NULL,
+  TransacaoCidade VARCHAR(100) NOT NULL,
+  TransacaoBairro VARCHAR(100) NOT NULL,
+  PRIMARY KEY (TransacaoID)
+);
