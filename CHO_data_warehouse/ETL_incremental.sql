@@ -752,3 +752,62 @@ TRUNCATE TABLE audit.ins_filial;
 TRUNCATE TABLE audit.ins_cliente;
 TRUNCATE TABLE audit.ins_pedido;
 TRUNCATE TABLE audit.ins_item;
+
+-- Carregar a extensão pg_cron
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Criar a função que atualiza o faturamento esperado
+CREATE OR REPLACE FUNCTION atualiza_FaturamentoEsperado()
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO cho.FaturamentoEsperado (Data, FaturamentoID, FaturamentoEsperado, FaturamentoReal, Porcentagem, FilialKEY)
+    SELECT
+        COALESCE(cartao.TransacaoData, nossa_base.PedidoData) AS Data,
+        gen_random_uuid() AS FaturamentoID,
+        cartao.ValorEsperado AS FaturamentoEsperado,
+        nossa_base.TotalGasto AS FaturamentoReal,
+        ROUND((nossa_base.TotalGasto::numeric / cartao.ValorEsperado::numeric)::numeric, 2) AS Porcentagem,
+        COALESCE(cartao.FilialKEY, nossa_base.FilialKEY) AS FilialKEY
+    FROM
+        (-- CARTÃO DE CRÉDITO
+            SELECT
+                tcd.TransacaoData,
+                fd.FilialKEY,
+                ROUND(SUM(tcd.TransacaoValor) * msf.MarketShare, 2) AS ValorEsperado
+            FROM
+                cc_bd.TransacaoCartaoDeCredito tcd
+            JOIN
+                cho.FilialDimension fd ON tcd.TransacaoCidade = fd.FilialMunicipio
+                AND tcd.TransacaoBairro = fd.FilialBairro
+            JOIN
+                cc_bd.MarketShareFilial msf ON fd.FilialID = msf.FilialID
+            WHERE
+                tcd.TransacaoSegmento = 'Alimentação'
+            GROUP BY
+                fd.FilialKEY, tcd.TransacaoData, msf.MarketShare) AS cartao
+            JOIN
+            (-- NOSSA BASE
+            SELECT
+                CAST(p.PedidoData AS DATE) AS PedidoData,
+                fd.FilialKEY,
+                SUM(pi.Quantidade * i.ItemPrecoVenda) AS TotalGasto
+            FROM
+                cho.FilialDimension fd
+            JOIN
+                cho_db.Pedido p ON p.FilialID = fd.FilialID
+            JOIN
+                cho_db.PedidoItem pi ON p.PedidoID = pi.PedidoID
+            JOIN
+                cho_db.Item i ON pi.ItemID = i.ItemID
+            GROUP BY
+                CAST(p.PedidoData AS DATE), fd.FilialKEY) AS nossa_base
+            ON
+            cartao.TransacaoData = nossa_base.PedidoData
+            AND cartao.FilialKEY = nossa_base.FilialKEY
+    WHERE
+        (COALESCE(cartao.FilialKEY, nossa_base.FilialKEY), COALESCE(cartao.TransacaoData, nossa_base.PedidoData)) NOT IN (SELECT FilialKEY, Data FROM cho.FaturamentoEsperado);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Agendar a execução da função para rodar todos os dias à meia-noite
+SELECT cron.schedule('0 0 * * *', 'SELECT atualiza_FaturamentoEsperado();');
