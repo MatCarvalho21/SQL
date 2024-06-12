@@ -753,9 +753,6 @@ TRUNCATE TABLE audit.ins_cliente;
 TRUNCATE TABLE audit.ins_pedido;
 TRUNCATE TABLE audit.ins_item;
 
--- Carregar a extensão pg_cron
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-
 -- Criar a função que atualiza o faturamento esperado
 CREATE OR REPLACE FUNCTION atualiza_FaturamentoEsperado()
 RETURNS VOID AS $$
@@ -809,5 +806,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Agendar a execução da função para rodar todos os dias à meia-noite
-SELECT cron.schedule('0 0 * * *', 'SELECT atualiza_FaturamentoEsperado();');
+-- Executar a função para atualizar o faturamento esperado
+SELECT atualiza_FaturamentoEsperado();
+
+-- Carregar a extensão pg_cron
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- Agendar a execução da função para rodar todos os dias à meia-noite (ideia inicial)
+-- SELECT cron.schedule('0 0 * * *', 'SELECT atualiza_FaturamentoEsperado();');
